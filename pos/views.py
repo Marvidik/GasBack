@@ -12,7 +12,7 @@ from django.shortcuts import get_object_or_404
 @api_view(['GET'])
 def individual_sales(request, id):
     # Filter sales for the specified worker and order by date descending
-    data = Sales.objects.filter(worker=id).order_by('-date', 'id')
+    data = Sales.objects.filter(worker=id).order_by('-date', '-id')
 
     # Serialize the data
     serializer = SalesSerializer(instance=data, many=True)
