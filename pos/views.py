@@ -10,10 +10,12 @@ from django.shortcuts import get_object_or_404
 
 
 @api_view(['GET'])
-def individuale_sales(request,id):
-    data=Sales.objects.filter(worker=id)
+def individual_sales(request, id):
+    # Filter sales for the specified worker and order by date descending
+    data = Sales.objects.filter(worker=id).order_by('-date')
 
-    serializer=SalesSerializer(instance=data,many=True)
+    # Serialize the data
+    serializer = SalesSerializer(instance=data, many=True)
 
     return Response({'worker_sales': serializer.data}, status=status.HTTP_200_OK)
 
