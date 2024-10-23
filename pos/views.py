@@ -130,17 +130,14 @@ def create_sale(request):
         amount_bought = int(data.get('amount_bought'))
         amount_paid = int(data.get('amount_paid'))
         payment_option = data.get('payment_option')
+        product=data.get('product')
 
-        # Get the latest product by order of creation or date
-        latest_product = Product.objects.latest('id')
+    
 
         # Ensure all fields are provided
         if not all([worker_id, customer, phone, amount_bought, amount_paid, payment_option]):
             return Response({"error": "All fields are required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Check if enough product quantity is available
-        if latest_product.quantity < amount_bought:
-            return Response({"error": "Not enough product available"}, status=status.HTTP_400_BAD_REQUEST)
 
         # If enough quantity, create the sale and update product quantity
         sale = Sales.objects.create(
@@ -149,17 +146,15 @@ def create_sale(request):
             phone=phone,
             amount_bought=amount_bought,
             amount_paid=amount_paid,
-            payment_option=payment_option
+            payment_option=payment_option,
+            product=product
         )
 
-        # Reduce the product quantity
-        latest_product.quantity -= amount_bought
-        latest_product.save()
+       
 
         return Response({
             "message": "Sale created successfully",
-            "sale_id": sale.id,
-            "remaining_quantity": latest_product.quantity
+            "sale_id": sale.id
         }, status=status.HTTP_201_CREATED)
 
     except Product.DoesNotExist:
