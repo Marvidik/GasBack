@@ -255,24 +255,27 @@ def get_products(request):
 @api_view(['POST'])
 def create_other_sale(request):
     try:
-        # Get the data from the request body
-        data = request.data
+        # Log request data for debugging
+        print("Request data:", request.data)
 
-        # Explicitly fetch each field from the request data
-        worker_id = data.get('worker_id')
-        product_id = data.get('product')
-        customer = data.get('customer')
-        phone = data.get('phone')
-        amount_bought = data.get('amount_bought')
-        amount_paid = data.get('amount_paid')
-        payment_option = data.get('payment_option')
-
-        # Check if any field is missing or None
-        missing_fields = [field for field in ['worker_id', 'product', 'customer', 'phone', 'amount_bought', 'amount_paid', 'payment_option'] if not data.get(field)]
+        # Ensure all required fields are present
+        required_fields = ['worker_id', 'product', 'customer', 'phone', 'amount_bought', 'amount_paid', 'payment_option']
+        missing_fields = [field for field in required_fields if field not in request.data]
+        
         if missing_fields:
             return Response({"error": f"Missing fields: {', '.join(missing_fields)}"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Ensure amount_bought and amount_paid are valid floats
+        # Retrieve all the fields from request.data directly
+        data = request.data
+        worker_id = data['worker_id']
+        product_id = data['product']
+        customer = data['customer']
+        phone = data['phone']
+        amount_bought = data['amount_bought']
+        amount_paid = data['amount_paid']
+        payment_option = data['payment_option']
+
+        # Check if amounts are valid numbers
         try:
             amount_bought = float(amount_bought)
             amount_paid = float(amount_paid)
@@ -280,18 +283,16 @@ def create_other_sale(request):
             return Response({"error": "Amount bought and amount paid must be valid numbers"}, status=status.HTTP_400_BAD_REQUEST)
 
         # Fetch the worker (User) by worker_id
-        try:
-            worker = User.objects.get(id=worker_id)
-        except User.DoesNotExist:
+        worker = User.objects.filter(id=worker_id).first()
+        if not worker:
             return Response({"error": "Worker not found"}, status=status.HTTP_404_NOT_FOUND)
 
         # Fetch the product by product_id
-        try:
-            product = OtherProducts.objects.get(id=product_id)
-        except OtherProducts.DoesNotExist:
+        product = OtherProducts.objects.filter(id=product_id).first()
+        if not product:
             return Response({"error": "Product not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        # Check if there's enough stock available
+        # Check if there’s enough stock available
         if product.quantity < amount_bought:
             return Response({"error": "Not enough product quantity available"}, status=status.HTTP_400_BAD_REQUEST)
 
