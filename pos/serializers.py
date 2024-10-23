@@ -11,12 +11,7 @@ class SalesSerializer(serializers.ModelSerializer):
         model = Sales
         fields = "__all__"
 
-#  user serializer
-class OtherSalesSerializer(serializers.ModelSerializer):
-    
-    class Meta(object):
-        model = OtherSales
-        fields = "__all__"
+
 
 class OtherProductsSerializer(serializers.ModelSerializer):
     

@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import Product,Sales,Amount,Expenses,OtherSales
+from .models import Product,Sales,Amount,Expenses
 from .serializers import *
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -239,15 +239,6 @@ def calculate_worker_daily_revenue(request, worker_id):
 
 
 
-@api_view(['GET'])
-def individual_other_sales(request, id):
-    # Filter sales for the specified worker and order by date descending
-    data = OtherSales.objects.filter(worker=id).order_by('-date', '-id')
-
-    # Serialize the data
-    serializer = OtherSalesSerializer(instance=data, many=True)
-
-    return Response({'worker_sales': serializer.data}, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def get_products(request):
@@ -256,14 +247,3 @@ def get_products(request):
     return Response(serializer.data)
 
 
-class CreatePSalesView(GenericAPIView, CreateModelMixin):
-    queryset = OtherSales.objects.all()
-    serializer_class = OtherSalesSerializer
-
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            self.perform_create(serializer)
-            return Response({'Sales': "Done"}, status=status.HTTP_201_CREATED)
-        else:
-            return Response({'Sales': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
