@@ -7,6 +7,8 @@ from rest_framework import status
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.generics import GenericAPIView
+from rest_framework.mixins import CreateModelMixin
 # Create your views here.
 
 
@@ -254,13 +256,14 @@ def get_products(request):
     return Response(serializer.data)
 
 
-@api_view(['POST'])
-def createpsales(request):
-    serializer= OtherSalesSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response({'Sales':"Done"}, status=status.HTTP_200_OK)
-    else:
-        return Response({'Sales':serializer.data}, status=status.HTTP_400_BAD_REQUEST)
+class CreatePSalesView(GenericAPIView, CreateModelMixin):
+    queryset = OtherSales.objects.all()
+    serializer_class = OtherSalesSerializer
 
-
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            self.perform_create(serializer)
+            return Response({'Sales': "Done"}, status=status.HTTP_201_CREATED)
+        else:
+            return Response({'Sales': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)

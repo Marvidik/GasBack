@@ -15,6 +15,6 @@ urlpatterns = [
     path("revenue",calculate_total_revenue,name="revenue"),
     path("workers_revenue/<worker_id>",calculate_worker_daily_revenue,name="workers_revenue"),
     path("other_products",get_products,name="products"),
-    path("prodsale/",createpsales,name="productsale"),
+    path("prodsale/",CreatePSalesView.as_view(),name="productsale"),
     path("individual_product_sale/<id>",individual_other_sales,name="prodsales")
 ]
