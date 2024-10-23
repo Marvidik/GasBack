@@ -253,7 +253,7 @@ def get_products(request):
     serializer = OtherProductsSerializer(products, many=True)
     return Response(serializer.data)
 
-@csrf_exempt
+
 @api_view(['POST'])
 def createpsales(request):
     serializer= OtherSalesSerializer(data=request.data)
