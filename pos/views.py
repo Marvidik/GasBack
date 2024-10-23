@@ -261,6 +261,6 @@ def createpsales(request):
         serializer.save()
         return Response({'Sales':"Done"}, status=status.HTTP_200_OK)
     else:
-        return Response({'Sales':serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'Sales':serializer.data}, status=status.HTTP_400_BAD_REQUEST)
 
 
