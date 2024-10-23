@@ -260,9 +260,6 @@ def create_other_sale(request):
     try:
         # Get worker details
         worker_id = data.get('worker_id')
-        if not worker_id:
-            return Response({"error": "Worker ID is required"}, status=status.HTTP_400_BAD_REQUEST)
-
         try:
             worker = User.objects.get(id=worker_id)
         except User.DoesNotExist:
