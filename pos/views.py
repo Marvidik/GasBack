@@ -254,70 +254,11 @@ def get_products(request):
 
 @api_view(['POST'])
 def create_other_sale(request):
-    try:
-        # Log request data for debugging
-        print("Request data:", request.data)
+    serializer= OtherSalesSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response({'Sales':"Done"}, status=status.HTTP_200_OK)
+    else:
+        return Response({'Sales':"error"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Ensure all required fields are present
-        required_fields = ['worker_id', 'product', 'customer', 'phone', 'amount_bought', 'amount_paid', 'payment_option']
-        missing_fields = [field for field in required_fields if field not in request.data]
-        
-        if missing_fields:
-            return Response({"error": f"Missing fields: {', '.join(missing_fields)}"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Retrieve all the fields from request.data directly
-        data = request.data
-        worker_id = data['worker_id']
-        product_id = data['product']
-        customer = data['customer']
-        phone = data['phone']
-        amount_bought = data['amount_bought']
-        amount_paid = data['amount_paid']
-        payment_option = data['payment_option']
-
-        # Check if amounts are valid numbers
-        try:
-            amount_bought = float(amount_bought)
-            amount_paid = float(amount_paid)
-        except (ValueError, TypeError):
-            return Response({"error": "Amount bought and amount paid must be valid numbers"}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Fetch the worker (User) by worker_id
-        worker = User.objects.filter(id=worker_id).first()
-        if not worker:
-            return Response({"error": "Worker not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        # Fetch the product by product_id
-        product = OtherProducts.objects.filter(id=product_id).first()
-        if not product:
-            return Response({"error": "Product not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        # Check if there’s enough stock available
-        if product.quantity < amount_bought:
-            return Response({"error": "Not enough product quantity available"}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Create the sale entry
-        sale = OtherSales.objects.create(
-            worker=worker,
-            product=product,
-            customer=customer,
-            phone=phone,
-            amount_bought=amount_bought,
-            amount_paid=amount_paid,
-            payment_option=payment_option
-        )
-
-        # Deduct the amount bought from the product stock
-        product.quantity -= amount_bought
-        product.save()
-
-        # Return the success response with sale details
-        return Response({
-            "message": "Sale created successfully",
-            "sale_id": sale.id,
-            "remaining_quantity": product.quantity
-        }, status=status.HTTP_201_CREATED)
-
-    except Exception as e:
-        # Catch any unexpected exceptions and return an error
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
