@@ -13,5 +13,7 @@ urlpatterns = [
     path("total_expenses",calculate_total_expenses,name="total_expense"),
     path("price",price,name="price"),
     path("revenue",calculate_total_revenue,name="revenue"),
-    path("workers_revenue/<worker_id>",calculate_worker_daily_revenue,name="workers_revenue")
+    path("workers_revenue/<worker_id>",calculate_worker_daily_revenue,name="workers_revenue"),
+    path("other_products",get_products,name="products"),
+    path("prod_sale",create_other_sale,name="productsale")
 ]

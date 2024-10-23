@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import Product,Sales,Amount,Expenses
+from .models import Product,Sales,Amount,Expenses,OtherSales
 from .serializers import *
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -232,3 +232,52 @@ def calculate_worker_daily_revenue(request, worker_id):
 
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+
+
+
+@api_view(['GET'])
+def individual_other_sales(request, id):
+    # Filter sales for the specified worker and order by date descending
+    data = OtherSales.objects.filter(worker=id).order_by('-date', '-id')
+
+    # Serialize the data
+    serializer = OtherSalesSerializer(instance=data, many=True)
+
+    return Response({'worker_sales': serializer.data}, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def get_products(request):
+    products = OtherProducts.objects.all()  # Fetch all products
+    serializer = OtherProductsSerializer(products, many=True)
+    return Response(serializer.data)
+
+@api_view(['POST'])
+def create_other_sale(request):
+    try:
+        # Extract product ID and amount bought from the request
+        product_id = request.data.get('product')
+        amount_bought = int(request.data.get('amount_bought'))
+        
+        # Get the product
+        product = OtherProducts.objects.get(id=product_id)
+
+        # Check if the requested quantity is available
+        if product.quantity < amount_bought:
+            return Response({'error': 'Insufficient stock available.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Proceed with the sale by creating a new sale record
+        serializer = OtherSalesSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()  # Save the sale
+
+            # Reduce the product's quantity
+            product.quantity -= amount_bought
+            product.save()  # Save the updated quantity
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    except OtherProducts.DoesNotExist:
+        return Response({'error': 'Product not found.'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
