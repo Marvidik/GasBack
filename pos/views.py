@@ -257,8 +257,18 @@ def create_other_sale(request):
     try:
         # Extract product ID and amount bought from the request
         product_id = request.data.get('product')
-        amount_bought = int(request.data.get('amount_bought'))
-        
+        amount_bought = request.data.get('amount_bought')
+
+        # Validate inputs
+        if product_id is None or amount_bought is None:
+            return Response({'error': 'Product ID and amount bought are required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Attempt to convert amount_bought to integer
+        try:
+            amount_bought = int(amount_bought)
+        except ValueError:
+            return Response({'error': 'Amount bought must be an integer.'}, status=status.HTTP_400_BAD_REQUEST)
+
         # Get the product
         product = OtherProducts.objects.get(id=product_id)
 
@@ -276,7 +286,9 @@ def create_other_sale(request):
             product.save()  # Save the updated quantity
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     except OtherProducts.DoesNotExist:
         return Response({'error': 'Product not found.'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
