@@ -252,44 +252,72 @@ def get_products(request):
     serializer = OtherProductsSerializer(products, many=True)
     return Response(serializer.data)
 
-@api_view(['POST'])
+@api_view(["POST"])
 def create_other_sale(request):
+    # Extract data from the request
+    data = request.data
+
     try:
-        # Extract product ID and amount bought from the request
-        product_id = request.data.get('product')
-        amount_bought = request.data.get('amount_bought')
+        # Get worker details
+        worker_id = data.get('worker_id')
+        if not worker_id:
+            return Response({"error": "Worker ID is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Validate inputs
-        if product_id is None or amount_bought is None:
-            return Response({'error': 'Product ID and amount bought are required.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Attempt to convert amount_bought to integer
         try:
-            amount_bought = int(amount_bought)
+            worker = User.objects.get(id=worker_id)
+        except User.DoesNotExist:
+            return Response({"error": "Worker not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Get the customer details and sale info
+        customer = data.get('customer')
+        phone = data.get('phone')
+        amount_bought = data.get('amount_bought')
+        amount_paid = data.get('amount_paid')
+        payment_option = data.get('payment_option')
+        product_id = data.get('product')
+
+        # Ensure all fields are provided
+        if not all([customer, phone, amount_bought, amount_paid, payment_option, product_id]):
+            return Response({"error": "All fields are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Convert amount_bought and amount_paid to floats, with validation
+        try:
+            amount_bought = float(amount_bought)
+            amount_paid = float(amount_paid)
         except ValueError:
-            return Response({'error': 'Amount bought must be an integer.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Amount bought and amount paid must be valid numbers"}, status=status.HTTP_400_BAD_REQUEST)
 
         # Get the product
-        product = OtherProducts.objects.get(id=product_id)
+        try:
+            product = OtherProducts.objects.get(id=product_id)
+        except OtherProducts.DoesNotExist:
+            return Response({"error": "Product not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        # Check if the requested quantity is available
+        # Check if enough product quantity is available
         if product.quantity < amount_bought:
-            return Response({'error': 'Insufficient stock available.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Proceed with the sale by creating a new sale record
-        serializer = OtherSalesSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()  # Save the sale
+            return Response({"error": "Not enough product available"}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Reduce the product's quantity
-            product.quantity -= amount_bought
-            product.save()  # Save the updated quantity
+        # Create the sale and update product quantity
+        sale = OtherSales.objects.create(
+            worker=worker,
+            product=product,
+            customer=customer,
+            phone=phone,
+            amount_bought=amount_bought,
+            amount_paid=amount_paid,
+            payment_option=payment_option
+        )
 
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # Reduce the product quantity
+        product.quantity -= amount_bought
+        product.save()
 
-    except OtherProducts.DoesNotExist:
-        return Response({'error': 'Product not found.'}, status=status.HTTP_404_NOT_FOUND)
+        # Return a success response
+        return Response({
+            "message": "Sale created successfully",
+            "sale_id": sale.id,
+            "remaining_quantity": product.quantity
+        }, status=status.HTTP_201_CREATED)
+
     except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
