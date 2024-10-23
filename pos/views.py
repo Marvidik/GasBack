@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404
+from django.views.decorators.csrf import csrf_exempt
 # Create your views here.
 
 
@@ -252,13 +253,14 @@ def get_products(request):
     serializer = OtherProductsSerializer(products, many=True)
     return Response(serializer.data)
 
+@csrf_exempt
 @api_view(['POST'])
-def create_other_sale(request):
+def createpsales(request):
     serializer= OtherSalesSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
         return Response({'Sales':"Done"}, status=status.HTTP_200_OK)
     else:
-        return Response({'Sales':"error"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'Sales':serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
