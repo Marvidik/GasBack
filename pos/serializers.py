@@ -6,20 +6,20 @@ from .models import *
 
 #  user serializer
 class SalesSerializer(serializers.ModelSerializer):
-    referral_name = serializers.CharField(required=False, allow_blank=True)
+   
     class Meta(object):
         model = Sales
         fields = "__all__"
 
 #  user serializer
 class OtherSalesSerializer(serializers.ModelSerializer):
-    referral_name = serializers.CharField(required=False, allow_blank=True)
+    
     class Meta(object):
         model = OtherSales
         fields = "__all__"
 
 class OtherProductsSerializer(serializers.ModelSerializer):
-    referral_name = serializers.CharField(required=False, allow_blank=True)
+    
     class Meta(object):
         model = OtherProducts
         fields = "__all__"
@@ -27,7 +27,7 @@ class OtherProductsSerializer(serializers.ModelSerializer):
 
 #  user serializer
 class ProductSerializer(serializers.ModelSerializer):
-    referral_name = serializers.CharField(required=False, allow_blank=True)
+  
     class Meta(object):
         model = Product
         fields = "__all__"
@@ -35,7 +35,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
 #  user serializer
 class ExpensesSerializer(serializers.ModelSerializer):
-    referral_name = serializers.CharField(required=False, allow_blank=True)
+ 
     class Meta(object):
         model = Expenses
         fields = "__all__"
