@@ -147,12 +147,8 @@ USE_TZ = True
 STATIC_URL = "static/"
 
 # Where the static files will be collected
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
-# Add your static file directories if needed
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),  # Your static folder
-]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
