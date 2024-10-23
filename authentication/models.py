@@ -7,4 +7,4 @@ from datetime import datetime
 
 class LastLogin(models.Model):
     worker=models.ForeignKey(User,on_delete=models.CASCADE)
-    date=models.DateTimeField(default=datetime.now())
+    date = models.DateTimeField(auto_now_add=True)

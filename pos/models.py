@@ -23,7 +23,7 @@ class Sales(models.Model):
     amount_bought=models.IntegerField()
     amount_paid=models.IntegerField()
     payment_option=models.CharField(max_length=20)
-    date=models.DateTimeField(default=datetime.now())
+    date = models.DateTimeField(auto_now_add=True)
 
 
 
