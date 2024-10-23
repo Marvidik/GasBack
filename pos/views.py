@@ -130,7 +130,9 @@ def create_sale(request):
         amount_bought = int(data.get('amount_bought'))
         amount_paid = int(data.get('amount_paid'))
         payment_option = data.get('payment_option')
-        product=data.get('product')
+        product_id=data.get('product')
+
+        product = get_object_or_404(OtherProducts, id=product_id)
 
     
 
@@ -147,7 +149,7 @@ def create_sale(request):
             amount_bought=amount_bought,
             amount_paid=amount_paid,
             payment_option=payment_option,
-            product=product
+            goods=product
         )
 
        
@@ -157,14 +159,10 @@ def create_sale(request):
             "sale_id": sale.id
         }, status=status.HTTP_201_CREATED)
 
-    except Product.DoesNotExist:
-        return Response({"error": "Product not found"}, status=status.HTTP_404_NOT_FOUND)
-
     except User.DoesNotExist:
         return Response({"error": "Worker not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
     
 
 @api_view(['GET'])
