@@ -127,24 +127,6 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.BasicAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
-    ),
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
-    ],
-}
-
-# To exclude the API URLs from CSRF check, use middleware for API URLs
-from django.utils.deprecation import MiddlewareMixin
-class DisableCSRFForAPI(MiddlewareMixin):
-    def process_request(self, request):
-        if request.path.startswith('/pos/'):
-            setattr(request, '_dont_enforce_csrf_checks', True)
-        return None
-
 
 # Internationalization
 LANGUAGE_CODE = 'en-us'
