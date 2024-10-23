@@ -255,43 +255,47 @@ def get_products(request):
 @api_view(['POST'])
 def create_other_sale(request):
     try:
-        # Extract all necessary fields from the request data
-        worker_id = request.data.get('worker_id')
-        product_id = request.data.get('product')
-        customer = request.data.get('customer')
-        phone = request.data.get('phone')
-        amount_bought = request.data.get('amount_bought')
-        amount_paid = request.data.get('amount_paid')
-        payment_option = request.data.get('payment_option')
+        # Get the data from the request body
+        data = request.data
 
-        # Validate that all required fields are present
-        if not all([worker_id, product_id, customer, phone, amount_bought, amount_paid, payment_option]):
-            return Response({"error": "All fields are required"}, status=status.HTTP_400_BAD_REQUEST)
+        # Explicitly fetch each field from the request data
+        worker_id = data.get('worker_id')
+        product_id = data.get('product')
+        customer = data.get('customer')
+        phone = data.get('phone')
+        amount_bought = data.get('amount_bought')
+        amount_paid = data.get('amount_paid')
+        payment_option = data.get('payment_option')
 
-        # Ensure the amount fields are numeric
+        # Check if any field is missing or None
+        missing_fields = [field for field in ['worker_id', 'product', 'customer', 'phone', 'amount_bought', 'amount_paid', 'payment_option'] if not data.get(field)]
+        if missing_fields:
+            return Response({"error": f"Missing fields: {', '.join(missing_fields)}"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Ensure amount_bought and amount_paid are valid floats
         try:
             amount_bought = float(amount_bought)
             amount_paid = float(amount_paid)
-        except ValueError:
+        except (ValueError, TypeError):
             return Response({"error": "Amount bought and amount paid must be valid numbers"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Ensure worker exists
+        # Fetch the worker (User) by worker_id
         try:
             worker = User.objects.get(id=worker_id)
         except User.DoesNotExist:
             return Response({"error": "Worker not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        # Ensure product exists
+        # Fetch the product by product_id
         try:
             product = OtherProducts.objects.get(id=product_id)
         except OtherProducts.DoesNotExist:
             return Response({"error": "Product not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        # Check if there is enough product quantity available
+        # Check if there's enough stock available
         if product.quantity < amount_bought:
-            return Response({"error": "Not enough product available"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Not enough product quantity available"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Create the sale record
+        # Create the sale entry
         sale = OtherSales.objects.create(
             worker=worker,
             product=product,
@@ -302,11 +306,11 @@ def create_other_sale(request):
             payment_option=payment_option
         )
 
-        # Reduce the product quantity and save the product
+        # Deduct the amount bought from the product stock
         product.quantity -= amount_bought
         product.save()
 
-        # Return a success response with sale information
+        # Return the success response with sale details
         return Response({
             "message": "Sale created successfully",
             "sale_id": sale.id,
@@ -314,5 +318,5 @@ def create_other_sale(request):
         }, status=status.HTTP_201_CREATED)
 
     except Exception as e:
-        # Handle unexpected errors
+        # Catch any unexpected exceptions and return an error
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
