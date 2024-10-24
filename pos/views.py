@@ -127,8 +127,8 @@ def create_sale(request):
         # Get the customer details and sale info
         customer = data.get('customer')
         phone = data.get('phone')
-        amount_bought = int(data.get('amount_bought'))
-        amount_paid = int(data.get('amount_paid'))
+        amount_bought = float(data.get('amount_bought'))
+        amount_paid = float(data.get('amount_paid'))
         payment_option = data.get('payment_option')
         product_id = data.get('product')
 
