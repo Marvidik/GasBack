@@ -130,18 +130,19 @@ def create_sale(request):
         amount_bought = int(data.get('amount_bought'))
         amount_paid = int(data.get('amount_paid'))
         payment_option = data.get('payment_option')
-        product_id=data.get('product')
+        product_id = data.get('product')
 
         product = get_object_or_404(OtherProducts, id=product_id)
-
-    
 
         # Ensure all fields are provided
         if not all([worker_id, customer, phone, amount_bought, amount_paid, payment_option]):
             return Response({"error": "All fields are required"}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Check if the amount being bought is less than or equal to the available product quantity
+        if amount_bought > product.quantity:
+            return Response({"error": "Not enough quantity available"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # If enough quantity, create the sale and update product quantity
+        # Create the sale and update product quantity
         sale = Sales.objects.create(
             worker=worker,
             customer=customer,
@@ -152,7 +153,9 @@ def create_sale(request):
             goods=product
         )
 
-       
+        # Reduce the product quantity by the amount bought
+        product.quantity -= amount_bought
+        product.save()
 
         return Response({
             "message": "Sale created successfully",
@@ -161,8 +164,8 @@ def create_sale(request):
 
     except User.DoesNotExist:
         return Response({"error": "Worker not found"}, status=status.HTTP_404_NOT_FOUND)
-    
-
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     
 
