@@ -161,8 +161,7 @@ def create_sale(request):
 
     except User.DoesNotExist:
         return Response({"error": "Worker not found"}, status=status.HTTP_404_NOT_FOUND)
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
 
     
     
