@@ -17,4 +17,5 @@ urlpatterns = [
     path("other_products",get_products,name="products"),
     path('create-expense/',create_expense, name='create_expense'),
     path('create-product/', create_product, name='create_product'),
+    path('products/<int:pk>/', update_product, name='update-product'),
 ]

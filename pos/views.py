@@ -263,3 +263,19 @@ def create_product(request):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['PUT'])  # Use 'PATCH' if you want to allow partial updates
+def update_product(request, pk):
+    try:
+        product = OtherProducts.objects.get(pk=pk)  # Fetch the product by primary key
+    except OtherProducts.DoesNotExist:
+        return Response({'error': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    serializer = OtherProductsSerializer(product, data=request.data)  # Pass the existing product and new data
+    
+    if serializer.is_valid():
+        serializer.save()  # Save the updated product
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
