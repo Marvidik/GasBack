@@ -15,4 +15,6 @@ urlpatterns = [
     path("revenue",calculate_total_revenue,name="revenue"),
     path("workers_revenue/<worker_id>",calculate_worker_daily_revenue,name="workers_revenue"),
     path("other_products",get_products,name="products"),
+    path('create-expense/',create_expense, name='create_expense'),
+    path('create-product/', create_product, name='create_product'),
 ]

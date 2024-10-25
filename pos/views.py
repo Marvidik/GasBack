@@ -244,3 +244,22 @@ def get_products(request):
     return Response(serializer.data)
 
 
+@api_view(['POST'])
+def create_expense(request):
+    serializer = ExpensesSerializer(data=request.data)
+    
+    if serializer.is_valid():
+        serializer.save()  # Save the expense to the database
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def create_product(request):
+    serializer = OtherProductsSerializer(data=request.data)
+    
+    if serializer.is_valid():
+        serializer.save()  # Save the product to the database
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
