@@ -7,6 +7,7 @@ from .models import *
 #  user serializer
 class SalesSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source='goods.name', read_only=True)
+    seller= serializers.CharField(source='worker.username', read_only=True)
     class Meta(object):
         model = Sales
         fields = "__all__"

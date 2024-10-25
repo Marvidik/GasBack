@@ -24,7 +24,7 @@ def individual_sales(request, id):
 
 @api_view(['GET'])
 def all_sales(request):
-    data=Sales.objects.all()
+    data=Sales.objects.all().order_by('-date', '-id')
 
     serializer=SalesSerializer(instance=data,many=True)
 
